@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<system xmlns="http://www.eiffel.com/developers/xml/configuration-1-20-0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.eiffel.com/developers/xml/configuration-1-20-0 http://www.eiffel.com/developers/xml/configuration-1-20-0.xsd" name="starter_code" uuid="D4B96082-4FC5-4CC7-8F95-15AF390DC04F">
+	<target name="starter_code">
+		<root class="ROOT" feature="make"/>
+		<file_rule>
+			<exclude>/CVS$</exclude>
+			<exclude>/EIFGENs$</exclude>
+			<exclude>/\.git$</exclude>
+			<exclude>/\.svn$</exclude>
+		</file_rule>
+		<option warning="true" syntax="standard" manifest_array_type="mismatch_warning">
+			<assertions precondition="true" postcondition="true" check="true" invariant="true" loop="true" supplier_precondition="true"/>
+		</option>
+		<setting name="console_application" value="true"/>
+		<setting name="dead_code_removal" value="feature"/>
+		<capability>
+			<concurrency support="scoop" use="scoop"/>
+			<void_safety support="all" use="all"/>
+		</capability>
+		<precompile name="base_pre" location="$ISE_PRECOMP\base-scoop-safe.ecf"/>
+		<library name="base" location="$ISE_LIBRARY\library\base\base.ecf">
+			<renaming old_name="SET" new_name="EIFFEL_SET"/>
+			<renaming old_name="BAG" new_name="EIFFEL_BAG"/>
+			<renaming old_name="QUEUE" new_name="EIFFEL_QUEUE"/>
+			<renaming old_name="STACK" new_name="EIFFEL_STACK"/>
+		</library>
+		<library name="base_extension" location="$ISE_LIBRARY\library\base_extension\base_extension.ecf"/>
+		<library name="espec" location="$ISE_LIBRARY\contrib\library\testing\framework\espec\library\espec.ecf"/>
+		<library name="kernel" location="$ISE_LIBRARY\contrib\library\gobo\library\kernel\src\library.ecf"/>
+		<library name="mathmodels" location="$MATHMODELS\library\mathmodels.ecf"/>
+		<library name="regexp" location="$ISE_LIBRARY\contrib\library\gobo\library\regexp\src\library.ecf"/>
+		<library name="structure" location="$ISE_LIBRARY\contrib\library\gobo\library\structure\src\library.ecf"/>
+		<cluster name="model" location=".\model\" recursive="true"/>
+		<cluster name="root" location=".\root\" recursive="true"/>
+	</target>
+</system>

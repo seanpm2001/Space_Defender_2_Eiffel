@@ -1,0 +1,75 @@
+system space_defender_2
+-- 4 May 2020
+
+---------------------------------------------------------------------
+-- SpaceDefender System Types
+---------------------------------------------------------------------
+
+type INPUT_VALUE = 1..5
+   -- for setup selection
+
+type STATE = 1..5
+   -- for setup navigation
+
+type MAX_ROW = 5..10
+   -- max row size for board
+
+type MAX_COLUMN = 10..30
+   -- max column size for board
+
+type ROW = {A, B, C, D, E, F, G, H, I, J}
+   -- row
+
+type COLUMN = 1..30
+   -- column
+
+type THRESHOLD = 1..101   --value for specifying probabilities in game
+
+---------------------------------------------------------------------
+-- SpaceDefender User Commands
+---------------------------------------------------------------------
+
+play(row: MAX_ROW; column: MAX_COLUMN; g_threshold: THRESHOLD;
+   f_threshold: THRESHOLD; c_threshold: THRESHOLD;
+   i_threshold: THRESHOLD; p_threshold: THRESHOLD)
+   -- Starts a new game (goes to setup mode) provided game
+   -- has not been started yet or is over.
+   -- Size of board specified here.
+   -- thresholds determine type of enemy spawning and chance.
+   -- Subsequent thresholds should be greater or equal to previous value.
+
+setup_select(value: INPUT_VALUE)
+   -- Used in setup mode to select menu options
+
+setup_next(state: STATE)
+   -- Go forward setup mode by state states
+
+setup_back(state: STATE)
+   -- Go back setup mode by state states
+
+toggle_debug_mode
+   -- Toggles a flag.
+   -- If flag is true, display additional information such as all the
+   -- entities on the board (including projectiles).
+   -- You would normally only know about your ship.
+   -- Flag being true also turns off fog of war.
+
+abort 
+   -- Ends the game prematurely. Only valid when game is
+   -- in progress.
+	
+move (row: ROW; column: COLUMN)
+   -- Moves the Starfighter to location assuming movement is feasible.
+   -- Note that this command will cause a turn to pass/occur.
+
+pass 
+   -- Starfighter passes a turn.
+   -- Note that this command will cause a turn to pass/occur.
+
+fire
+   -- Starfighter fires a projectile.
+   -- Note that this command will cause a turn to pass/occur.
+
+special
+   -- Starfighter uses a special ability.
+   -- Note that this command will cause a turn to pass/occur.

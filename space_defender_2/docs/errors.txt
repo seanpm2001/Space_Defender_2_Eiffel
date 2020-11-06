@@ -1,0 +1,55 @@
+Errors are listed from the highest to lowest priority for each command. This means if multiple error conditions are satisfied, use the error message with the highest priority,
+
+play
+1. "Already in setup mode."
+(Using play command in the setup stage.)
+2. "Already in a game. Please abort to start a new one."
+(Using play command when in in game state.)
+3. "Threshold values are not non-decreasing."
+(The five threshold numbers are not non-decreasing in the sequence from the first number to the fifth number.)
+
+setup_next
+1. "Command can only be used in setup mode."
+(Command was not used in the setup stage.)
+
+setup_back
+1. "Command can only be used in setup mode."
+(Command was not used in the setup stage.)
+
+setup_select
+1. "Command can only be used in setup mode (excluding summary in setup)."
+(Command was not used in the setup stage excluding the setup summary state.)
+2. "Menu option selected out of range."
+(Recall this command takes in an integer from 1 to 5 and is used for selecting Starighter equipments during setup. Not all types of equipment have 5 options so selecting an option that is not offered results in this error.)
+
+abort
+1."Command can only be used in setup mode or in game."
+(Command was used in the not started state.)
+
+move
+1. "Command can only be used in game."
+(Command was not used in in game state.)
+2. "Cannot move outside of board."
+(Location specified to move the Starfighter to is outside the board.)
+3. "Already there.
+(The Starfighter is already at that location.)
+4. "Out of movement range."
+(The sum of the vertical and horizontal displacement, in the unit of spaces, from the Starfighter's initial location to the targeted location, exceeds the Starfighter's Move attribute value.)
+5. "Not enough resources to move."
+(Factoring in regeneration for that turn, the Starfighter did not have enough resources to move to the specified location.)
+
+pass
+1. "Command can only be used in game."
+(Command was not used in in game state.)
+
+fire
+1. "Command can only be used in game."
+(Command was not used in in game state.)
+2. "Not enough resources to fire."
+(Factoring in regeneration for that turn, the Starfighter did not have enough resources to fire.)
+
+special
+1. "Command can only be used in game."
+(Command was not used in in game state.)
+2. "Not enough resources to use special."
+(Factoring in regeneration for that turn, the Starfighter did not have enough resources to use its special.)

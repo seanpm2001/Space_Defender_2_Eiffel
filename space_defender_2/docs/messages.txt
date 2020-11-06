@@ -1,0 +1,560 @@
+HOW TO USE THIS DOCUMNET
+------------------------
+Each section in this document corresponds some section in the main Project instructions. You will find the precise messages which your software should output (in order to match the oracle).
+
+COMMANDS vs. STATES
+-------------------
+
+Overall, think of each run of your software as a sequence of interleaving commands and state outputs:
+
+  init state and pre-state of command_1
+->command_1
+  post-state of command_1 and pre-state of command_2
+->command_2
+  post-state of command_2 and pre-state of command_3
+...
+
+That is, each state output (except the initial one) displays the post-state of the previous command and the pre-state of next command.
+
+INITIAL STATE
+-------------
+When the software is started, the state is "not started". The output is:
+
+  state:not started, normal, ok
+  Welcome to Space Defender Version 2.
+
+COMMON STATE MESSAGE
+--------------------
+The first line "state:not started, normal, ok" is always prevalent in all state outputs. This line contains three parts:
+
+1. "state" denotes what state the software is currently in and can be "not started","weapon setup", "armour setup","engine setup", "power setup", "setup summary" or "in game". 
+
+2. "normal" means the game is in normal mode. The other option is "debug" and depending on the mode, the output is different when in in game state. 
+
+3. The "ok" is to indicate the command used is valid and no errors have occurred otherwise it will be "error".
+
+Note that when in game, there are two additional numbers separated by a decimal in "state":
+
+  state:in game(0.0), debug, ok
+
+Both numbers start at 0 and are reset between games. When moving to a new turn, the first number is incremented by 1 and the second number is reset to 0. Any other commands including invalid commands (that causes an error when used, see errors.txt) will result in the second number being incremented by 1. 
+
+Note. in all other examples after this section, the first line may be different due to different commands happening beforehand. Use the message above in this section to output the first line of the first state.
+
+ERRORS
+------
+Whenever a command is used and its usage is not valid, an error message will be displayed (see errors.txt). For example, using the "abort" command when in the "not started state" yields:
+
+->abort
+  state:not started, normal, error
+  Command can only be used in setup mode or in game.
+
+The error message is displayed on the second line. The other key thing to note is instead of "ok", we have "error" in the first line.
+
+PLAY/SETUP_SELECT COMMANDS
+--------------------------
+The "play" command, when used successfully in the "not started" state, transitions the software into the setup stage. The first state in the setup stage is "weapon setup":
+
+->play(5,10,1,1,1,1,1)
+  state:weapon setup, normal, ok
+  1:Standard (A single projectile is fired in front)
+    Health:10, Energy:10, Regen:0/1, Armour:0, Vision:1, Move:1, Move Cost:1,
+    Projectile Damage:70, Projectile Cost:5 (energy)
+  2:Spread (Three projectiles are fired in front, two going diagonal)
+    Health:0, Energy:60, Regen:0/2, Armour:1, Vision:0, Move:0, Move Cost:2,
+    Projectile Damage:50, Projectile Cost:10 (energy)
+  3:Snipe (Fast and high damage projectile, but only travels via teleporting)
+    Health:0, Energy:100, Regen:0/5, Armour:0, Vision:10, Move:3, Move Cost:0,
+    Projectile Damage:1000, Projectile Cost:20 (energy)
+  4:Rocket (Two projectiles appear behind to the sides of the Starfighter and accelerates)
+    Health:10, Energy:0, Regen:10/0, Armour:2, Vision:2, Move:0, Move Cost:3,
+    Projectile Damage:100, Projectile Cost:10 (health)
+  5:Splitter (A single mine projectile is placed in front of the Starfighter)
+    Health:0, Energy:100, Regen:0/10, Armour:0, Vision:0, Move:0, Move Cost:5,
+    Projectile Damage:150, Projectile Cost:70 (energy)
+  Weapon Selected:Standard
+
+The output above displays a list of options a Starfighter can have for its weapon (and it can be copied verbatim to your software). The default selected equipment is the first option (and this applies to the other types of equipment). This can be changed by using the "setup_select" command and specifying which option to select. The new output will mostly be the same except for the last line ("Weapon Selected:"), depending on what is selected. 
+
+Recall from the instructions that whatever is selected will be preserved, even between games and exiting the setup stage.
+
+SETUP_BACK/SETUP_NEXT COMMANDS AND OTHER SETUP STATES
+-----------------------------------------------------
+Besides "weapon setup", there are four other states in the setup stage (armour, engine, power, and summary):
+
+->setup_next(1)
+  state:armour setup, normal, ok
+  1:None
+    Health:50, Energy:0, Regen:1/0, Armour:0, Vision:0, Move:1, Move Cost:0
+  2:Light
+    Health:75, Energy:0, Regen:2/0, Armour:3, Vision:0, Move:0, Move Cost:1
+  3:Medium
+    Health:100, Energy:0, Regen:3/0, Armour:5, Vision:0, Move:0, Move Cost:3
+  4:Heavy
+    Health:200, Energy:0, Regen:4/0, Armour:10, Vision:0, Move:-1, Move Cost:5
+  Armour Selected:None
+->setup_next(1)
+  state:engine setup, normal, ok
+  1:Standard
+    Health:10, Energy:60, Regen:0/2, Armour:1, Vision:12, Move:8, Move Cost:2
+  2:Light
+    Health:0, Energy:30, Regen:0/1, Armour:0, Vision:15, Move:10, Move Cost:1
+  3:Armoured
+    Health:50, Energy:100, Regen:0/3, Armour:3, Vision:6, Move:4, Move Cost:5
+  Engine Selected:Standard
+->setup_next(1)
+  state:power setup, normal, ok
+  1:Recall (50 energy): Teleport back to spawn.
+  2:Repair (50 energy): Gain 50 health, can go over max health. Health regen will not be in effect if over cap.
+  3:Overcharge (up to 50 health): Gain 2*health spent energy, can go over max energy. Energy regen will not be in effect if over cap.
+  4:Deploy Drones (100 energy): Clear all projectiles.
+  5:Orbital Strike (100 energy): Deal 100 damage to all enemies, affected by armour.
+  Power Selected:Recall (50 energy): Teleport back to spawn.
+->setup_next(1)
+  state:setup summary, normal, ok
+  Weapon Selected:Standard
+  Armour Selected:None
+  Engine Selected:Standard
+  Power Selected:Recall (50 energy): Teleport back to spawn.
+
+Note that the last state in the setup stage is a summary of what equipment the Starfighter has.
+
+"setup_next" and "setup_back" can be used to navigate between different states in the setup stage.
+
+EXITING/ABORT
+-------------
+"setup_back", depending on the current state and the value supplied, can cause the software to exit from the setup stage to the "not started" state. The output will be the same as the one displayed when the software is started (see INITIAL STATE).
+
+The "abort" command can also be used to move to the "not started" state. 
+
+One scenario is when "abort" is used when the software is in the setup stage: 
+
+->abort
+  state:not started, normal, ok
+  Exited from setup mode.
+
+Note. Another invocation of the "abort" command in the "not started" state triggers an error (see errors.txt).
+  
+The other scenario is when "abort" is used when the software is in the "in game" state:
+
+->abort
+  state:not started, normal, ok
+  Exited from game.
+  
+TOGGLE_DEBUG_MODE
+-----------------
+"toggle_debug_mode" toggles debug mode to be on or off. The mode only has an impact on the output when in the "in game" state. Possible outputs from invoking the command are:
+
+->toggle_debug_mode
+  state:not started, debug, ok
+  In debug mode.
+
+->toggle_debug_mode
+  state:not started, normal, ok
+  Not in debug mode.
+
+Note that the "toggle_debug_mode" can be used in any states, hence the "state:..." part of the first line can be different as explained in the "STATE MESSAGES" section.
+
+IN GAME STATE
+-------------
+Using "setup_next" in the setup stage can lead to a game being started. 
+
+With the debug mode being off (meaning that the game is in the normal mode), the initial state only displays the Starfighter stats, e.g.:
+
+->setup_next(5)
+  state:in game(0.0), normal, ok
+  Starfighter:
+    [0,S]->health:70/70, energy:70/70, Regen:1/3, Armour:1, Vision:13, Move:10, Move Cost:3, location:[E,1]
+      Projectile Pattern:Standard, Projectile Damage:70, Projectile Cost:5 (energy)
+      Power:Recall (50 energy): Teleport back to spawn.
+      score:0
+      1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
+    A _  _  _  _  _  _  _  _  _  _  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?
+    B _  _  _  _  _  _  _  _  _  _  _  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?
+    C _  _  _  _  _  _  _  _  _  _  _  _  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?
+    D _  _  _  _  _  _  _  _  _  _  _  _  _  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?
+    E S  _  _  _  _  _  _  _  _  _  _  _  _  _  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?
+    F _  _  _  _  _  _  _  _  _  _  _  _  _  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?
+    G _  _  _  _  _  _  _  _  _  _  _  _  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?
+    H _  _  _  _  _  _  _  _  _  _  _  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?
+    I _  _  _  _  _  _  _  _  _  _  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?
+    J _  _  _  _  _  _  _  _  _  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?
+
+
+With debug mode on, more information is displayed. For example, the initial state displays stats of the Starfighter and other entities:
+
+->setup_next(5)
+  state:in game(0.0), debug, ok
+  Starfighter:
+    [0,S]->health:70/70, energy:70/70, Regen:1/3, Armour:1, Vision:13, Move:10, Move Cost:3, location:[E,1]
+      Projectile Pattern:Standard, Projectile Damage:70, Projectile Cost:5 (energy)
+      Power:Recall (50 energy): Teleport back to spawn.
+      score:0
+  Enemy:
+  Projectile:
+  Friendly Projectile Action:
+  Enemy Projectile Action:
+  Starfighter Action:
+  Enemy Action:
+  Natural Enemy Spawn:
+      1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
+    A _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _
+    B _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _
+    C _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _
+    D _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _
+    E S  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _
+    F _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _
+    G _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _
+    H _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _
+    I _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _
+    J _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _
+
+The above debug mode example indicates that, when the debug mode is on and in the "in game" state, the state always displays 8 sections followed by the board. See below for descriptions of each section.
+
+  SECTION 1: STARFIGHTER
+  SECTION 2: ENEMY
+  SECTION 3: PROJECTILE
+  SECTION 4: FRIENDLY PROJECTILE ACTION
+  SECTION 5: ENEMY PROJECTILE ACTION
+  SECTION 6: STARFIGHTER ACTION
+  SECTION 7: ENEMY ACTION
+  SECTION 8: NATURAL ENEMY SPAWN
+
+The key difference between normal and debug mode is that debug mode has more information. In normal mode, only: 1) the Starfighter statistics; and 2) a board that has fog of war mechanics implemented are shown. As an example for Item 2), see the example normal mode above, where the Starfighter has a vision of 13 (i.e., it cannot see beyond 13 spaces and the board reflects that fact).
+
+The size of the board depends on the parameters supplied for "play".
+
+SECTION 1: STARFIGHTER
+----------------------
+  Starfighter:
+    [0,S]->health:70/70, energy:70/70, Regen:1/3, Armour:1, Vision:13, Move:10, Move Cost:3, location:[E,1]
+      Projectile Pattern:Standard, Projectile Damage:70, Projectile Cost:5 (energy)
+      Power:Recall (50 energy): Teleport back to spawn.
+      score:0
+
+- [0,S], the "0" is the ID of the Starfighter, it is always 0. "S" is the entity symbol for Starfighter. 
+- The second value of "health" (total health), the second value of "energy" (total energy), "Regen", "Armour", "Vision", "Move", "Move Cost", Projectile and Power information is computed from the equipment selected. 
+- The first value of "health" is the current health. 
+- The first value of "energy" is the current energy. 
+- "location" is where the Starfighter is on the board and "score" is the current score in that game.
+
+SECTION 2: ENEMY
+----------------
+This section lists all the enemies that are still on the board in the order of the lowest ID to the highest ID. For example:
+
+  Enemy:
+    [1,G]->health:230/230, Regen:1, Armour:1, Vision:5, seen_by_Starfighter:T, can_see_Starfighter:F, location:[A,4]
+    [2,I]->health:50/50, Regen:0, Armour:0, Vision:5, seen_by_Starfighter:T, can_see_Starfighter:F, location:[A,5]
+    [3,P]->health:300/300, Regen:0, Armour:0, Vision:5, seen_by_Starfighter:T, can_see_Starfighter:F, location:[H,8]
+    [7,P]->health:300/300, Regen:0, Armour:0, Vision:5, seen_by_Starfighter:F, can_see_Starfighter:F, location:[B,16]
+    [8,C]->health:200/200, Regen:10, Armour:15, Vision:15, seen_by_Starfighter:F, can_see_Starfighter:F, location:[E,18]
+
+Each line is a mapping (separated by ->) of the entity id and symbol to its stats. The stats are similar to the ones from "SECTION 1: STARFIGHTER".
+
+Enemies do not have the concept of energy, hence Regen only has one value.
+
+The "seen_by_Starfighter" and "can_see_Starfighter" attributes denote whether the Starfighter can see the entity and vice versa depending on the distance between them and their vision. It is updated during the vision update phases (as described in the main document) and may not be accurate when the game is over.
+
+SECTION 3: PROJECTILE
+---------------------
+This section lists all the projectiles, both friendly (with symbol '*') and enemy (with symbol '<'), that are still on the board in the order of the highest ID to the lowest ID. For example:
+
+  Projectile:
+    [-19,*]->damage:70, move:5, location:[E,2]
+    [-20,<]->damage:15, move:4, location:[H,27]
+
+Each line is a mapping (separated by ->) of the entity id and symbol to its stats. 
+- "damage" is the damage it will do/heal on collision with another enemy or the Starfighter. It also plays a role in collision between other projectiles. 
+- "move" is how many units the projectile will move (left for enemy projectiles, right for friendly projectiles) on the next turn. Note for the "Rocket" weapon, their projectiles double in movement after each turn. Only update the "move" attribute after they act.
+
+SECTION 4: FRIENDLY PROJECTILE ACTION
+-------------------------------------
+This section logs all friendly projectile actions during the turn. For example:
+
+  Friendly Projectile Action:
+    A friendly projectile(id:-1) moves: [A,19] -> [A,22]
+      The projectile collides with enemy projectile(id:-6) at location [A,21], negating damage.
+      The projectile collides with Grunt(id:1) at location [A,22], dealing 9 damage.
+    A friendly projectile(id:-3) moves: [A,14] -> [A,19]
+
+In the above example, the second line shows the id of the projectile moving and where they go. It is assumed that the weapon is "Standard", meaning that the friendly projectile should move 5 spaces right to the target location. However, the friendly projectile does not move 5 spaces, because on its journey to the target location, it collided with another entity that caused it to be removed from the board. 
+
+The second line can be:
+
+	1. Projectile moves, but stays in the boundary of the board.
+	"A friendly projectile(id:<id>) moves: [X,Y] -> [A,B]"
+
+	2. Projectile moves outside of the board.
+	"A friendly projectile(id:<id>) moves: [X,Y] -> out of board"
+
+	3. Projectile does not move ("Splitter" weapon).
+	"A friendly projectile(id:<id>) stays at: [X,Y]"
+
+The subsequent lines show the interactions the projectile has with other entities on its journey, and they can be:
+
+	1. Collide with a friendly projectile.
+	"The projectile collides with friendly projectile(id:<id>) at location [X,Y], combining damage."
+
+	2. Collide with an enemy projectile.
+	"The projectile collides with enemy projectile(id:<id>) at location [X,Y], negating damage."
+
+	3. Collide with a Starfighter/enemy.
+	"The projectile collides with <entity name>(id:<id>) at location [X,Y], dealing <projectile damage - entity armour> damage."
+	If a non-projectile entity (Starfighter or enemy) is destroyed, append a message to indicate that, see "SECTION 8: NATURAL ENEMY SPAWN" for more details.
+
+The fifth line in the above example is for the next projectile that acts.
+
+SECTION 5: ENEMY PROJECTILE ACTION
+----------------------------------
+This section logs all enemy projectile actions during the turn. For example:
+
+  Enemy Projectile Action:
+    A enemy projectile(id:-1) moves: [A,11] -> [A,7]
+      The projectile collides with Starfighter(id:0) at location [A,7], dealing 14 damage.
+    A enemy projectile(id:-2) moves: [A,13] -> [A,9]
+
+It is a near mirror to "SECTION 4: FRIENDLY PROJECTILE ACTION", but with slightly different interactions.
+
+For the above example, the second line can also be:
+	1. Projectile moves, but stays in the boundary of the board.
+	"A enemy projectile(id:<id>) moves: [X,Y] -> [A,B]"
+
+	2. Projectile moves outside of the board.
+	"A enemy projectile(id:<id>) moves: [X,Y] -> out of board"
+
+For the above example, the third line can also be replaced by one or more of the following:
+	1. Collide with a friendly projectile.
+	"The projectile collides with friendly projectile(id:<id>) at location [X,Y], negating damage."
+
+	2. Collide with an enemy projectile.
+	"The projectile collides with enemy projectile(id:<id>) at location [X,Y], combining damage."
+
+	3. Collide with an enemy.
+	"The projectile collides with <enemy name>(id:<id>) at location [X,Y], healing <projectile damage> damage."
+
+	4. Collide with a Starfighter.
+	"The projectile collides with Starfighter(id:0) at location [X,Y], dealing <projectile damage - Starfighter armour> damage."
+	If the Starfighter is destroyed, append a message to indicate that, see "SECTION 8: NATURAL ENEMY SPAWN" for more details.
+
+For the above example, the fourth line is for the next projectile that acts.
+
+SECTION 6: STARFIGHTER ACTION
+-----------------------------
+The output is dependent on the command used.
+
+pass
+----
+  Starfighter Action:
+    The Starfighter(id:0) passes at location [A,7], doubling regen rate.
+
+The location in the message changes as required.
+
+fire
+----
+  Starfighter Action:
+    The Starfighter(id:0) fires at location [A,5].
+      A friendly projectile(id:-2) spawns at location out of board.
+      A friendly projectile(id:-3) spawns at location [A,6].
+      The projectile collides with Grunt(id:1) at location [A,6], dealing 49 damage.
+      A friendly projectile(id:-4) spawns at location [B,6].
+
+The above example assumes that the Starfighter is at [A,5] (the second line indicates it) and that it is using the "Spread" type weapon.
+
+Multiple projectiles are spawned, and the order is from those closest to row A to those furthest away from it.
+
+Line 3, 4, and 6 show the projectiles spawning. Possible scenarios of spawning may include:
+
+	1. Spawning out of the board.
+	"A friendly projectile(id:<id>) spawns at location out of board."
+
+	2. Spawning within the board.
+	"A friendly projectile(id:<id>) spawns at location [X,Y]."
+
+Line 5 shows a possible collision due to the projectile spawning. Possible collisions may include:
+
+	1. Colliding with a friendly projectile.
+	"The projectile collides with friendly projectile(id:<id>) at location [X,Y], combining damage."
+
+	2. Colliding with an enemy projectile.
+	"The projectile collides with enemy projectile(id:<id>) at location [X,Y], negating damage."
+
+	3. Colliding with an enemy.
+	"The projectile collides with <enemy name>(id:<id>) at location [X,Y], dealing <projectile damage - enemy armour> damage."
+	For Case 3, if an enemy is destroyed, append a message to indicate that, see "SECTION 8: NATURAL ENEMY SPAWN" for more details.
+
+move
+----
+  Starfighter Action:
+    The Starfighter(id:0) moves: [C,1] -> [A,6]
+      The Starfighter collides with enemy projectile(id:-3) at location [A,1], taking 14 damage.
+      The Starfighter collides with Grunt(id:1) at location [A,6], trading 130 damage.
+      The Grunt at location [A,6] has been destroyed.
+      The Starfighter at location [A,6] has been destroyed.
+
+It is similar to how projectiles act, but the interactions are different. The second line is always "The Starfighter(id:0) moves: [X,Y] -> [A,B]" where [A.B] is the actual location it reached (rather than the targeted location).
+
+Possible collisions (the third line and onwards) may include:
+
+	1. Colliding with any projectile.
+	"The Starfighter collides with <friendly/enemy> projectile(id:<id>) at location [X,Y], taking <projectile damage - Starfighter armour> damage."
+
+	2. Colliding with an enemy.
+	"The Starfighter collides with <enemy name>(id:<id>) at location [X,Y], trading <enemy current health> damage."
+
+For both cases above, if a non-projectile entity (i.e., for Case 1, the Starfighter; and for Case 2, the Starfighter or an enemy) is destroyed, append a message to indicate that, see "SECTION 8: NATURAL ENEMY SPAWN" for more details.
+
+special
+-------
+
+There are five cases to consider.
+
+Recall:
+
+  Starfighter Action:
+    The Starfighter(id:0) uses special, teleporting to: [C,1]
+
+The location in the message the Starfighter teleports to is its initial spawn and varies based on the number of rows in the board.
+
+Repair:
+
+  Starfighter Action:
+    The Starfighter(id:0) uses special, gaining 50 health.
+
+Overcharge:
+
+  Starfighter Action:
+    The Starfighter(id:0) uses special, gaining <X*2> energy at the expense of <X> health.
+
+X is the maximum amount of current health, up to 50, the Starfighter can lose without getting destroyed. Note that X can be 0.	
+
+Deploy Drones:
+
+  Starfighter Action:
+    The Starfighter(id:0) uses special, clearing projectiles with drones.
+      A projectile(id:-2) at location [C,10] has been neutralized.
+      A projectile(id:-3) at location [A,1] has been neutralized.
+
+The order the projectiles are cleared is from the highest to lowest ids. Only the projectile id and location vary between each message.
+
+Orbital Strike:
+
+  Starfighter Action:
+    The Starfighter(id:0) uses special, unleashing a wave of energy.
+      A Grunt(id:1) at location [A,26] takes 99 damage.
+      A Interceptor(id:2) at location [A,27] takes 100 damage.
+      The Interceptor at location [A,27] has been destroyed.
+      A Interceptor(id:3) at location [C,30] takes 100 damage.
+      The Interceptor at location [C,30] has been destroyed.
+
+The order of taking damage is from lowest to highest id. The id, location and damage taken depends on the enemy type. Damage taken is 100 - enemy armour.
+
+SECTION 7: ENEMY ACTION
+-----------------------
+This section reports what the enemies do during the turn. 
+
+Imagine that there is a list all enemies alive, sorted from the lowest id to the highest id: some of them perform preemptive actions, and others do not. 
+
+For example:
+
+  Enemy Action:
+    A Grunt(id:1) gains 10 total health.
+    A Fighter(id:2) moves: [A,26] -> [A,25]
+      A enemy projectile(id:-6) spawns at location [A,24].
+      The projectile collides with Grunt(id:1) at location [A,24], healing 100 damage.
+    A Carrier(id:3) moves: [C,28] -> [C,26]
+      A Interceptor(id:5) spawns at location [B,26].
+      A Interceptor(id:6) spawns at location [D,26].
+    A Fighter(id:4) moves: [B,30] -> [B,27]
+      A enemy projectile(id:-7) spawns at location [B,26].
+      The projectile collides with Interceptor(id:5) at location [B,26], healing 100 damage.
+    A Grunt(id:1) moves: [A,24] -> [A,22]
+      A enemy projectile(id:-8) spawns at location [A,21].
+	  
+In the above example, the enemy action section can be split into two phases:
+
+- [Phase 1]: From lowest to highest ids, enemies who have preempted actions act first.
+	See the first four actions by enemies with id:1, id:2, id:3, id:4 in the above example.
+  The consequence of this first phase is that some of these enemies might end their turns (e.g., id:2, id:3, id:4), whereas the rest will continue in the second phase (e.g., id:1).
+  
+- [Phase 2]: From lowest to highest ids, enemies who already performed preempted actions from Phase 1 (but whose turns have not ended) and enemies who do not have preempted actions act:
+	See the last action by Grunt(id:1) in the above example. Note that the above example does not include enemies who do not have preempted actions. 
+
+For each enemy action, there are 3 cases to consider in terms of output messages:
+
+- [Case 1]: Preempted actions that do not cause the enemy to end its turn (they act again later if alive) have the format 
+	"A <enemy name>(id:<id>) gains <amount> <armour/regen/total health>." 
+	In the above example, enemy Grunt(id:1) performs a preempted action in Line 2, which does not end its turn, so it continues later in the second last line.
+
+- [Case 2]: For preempted actions that cause the enemy to end its turn, what happens depend on the type of enemy. 
+	For example, see enemies with (id:2), (id:3), and (id:4) in the above example. 
+	
+- [Case 3]: When an enemy takes its turn (either because it does not have an preempted actions [Case 3.1], or because its preempted action does not end its turn [Case 3.2]), what happens also depends on the type of enemy. 
+	For Case 3.1, see the enemy with (id:1) in the second last line in the above example.
+	The above example does not show Case 3.2.
+
+For both Case 2 and Case 3 above:
+	- There is a movement phase. The movement messages are the same as the ones listed in 
+		"SECTION 4: FRIENDLY PROJECTILE ACTION", replacing "friendly projectile" with the enemy name. 
+	- The messages for collision when they move are the same as the ones in "SECTION 8: NATURAL ENEMY SPAWN". 
+	- Depending on the enemy type, they may fire, yielding: 
+		"A enemy projectile(id:<id>) spawns at location <[X,Y]/out of board>." 
+	- The spawning works the same as the one described in the "fire" section for the Starfighter, 
+		but the interactions are the same as the ones listed in "SECTION 5: ENEMY PROJECTILE ACTION". 
+	- An enemy can also spawn other enemies, with the log messages being the same as the ones listed in 
+		"SECTION 8: NATURAL ENEMY SPAWN", with an additional possibility of 
+		"A <enemy name>(id:<id>) spawns at location out of board."
+	- If the enemy is a Pylon, it heals nearby enemies sometimes (order is lowest to highest ids), 
+		with the following message, "The Pylon heals <enemy name>(id:<id>) at location [X,Y] for 10 damage."
+
+SECTION 8: NATURAL ENEMY SPAWN
+------------------------------
+This section is for logging the enemy that spawns at the end of the turn.
+
+For example:
+
+  Natural Enemy Spawn:
+    A Grunt(id:8) spawns at location [E,20].
+      The Grunt collides with Starfighter(id:0) at location [E,20], trading 100 damage.
+      The Grunt at location [E,20] has been destroyed.
+      The Starfighter at location [E,20] has been destroyed.
+
+The second line in the above example specifies the name of the enemy that spawns, its id, and the location where it spawns. 
+
+The subsequent lines show what happened due to the spawning. In the above example, the spawn location is already occupied by the Starfighter so a collision occurred.
+
+For the third line, possible collisions may include:
+
+	1. Enemy spawning into a location with friendly projectile.
+	"The <enemy name> collides with friendly projectile(id:<id>) at location [X,Y], taking <projectile damage - enemy armour> damage."
+
+	2. Enemy spawning into a location with enemy projectile.
+	"The <enemy name> collides with enemy projectile(id:<id>) at location [X,Y], healing <projectile damage> damage."
+
+	3. Enemy spawning into a location with Starfighter.
+	"The <enemy name> collides with Starfighter(id:0) at location [X,Y], trading <enemy current health> damage."
+
+For all three cases above, when a non-projectile entity is destroyed, append a line with the name, the location, and the fact it is destroyed. When the Starfighter and a non-projectile entity get destroyed, print the line related to the Starfighter last (e.g., see the last two lines in the above example).
+
+It is possible that there is no enemy spawning, resulting the section being empty.
+
+GAME OVER
+---------
+When the game is over due to the Starfighter having 0 current health, display an additional game-over message after the board (regardless of normal or debug mode). The state goes back to "not started". 
+
+Note. The game ends whenever the Starfighter has 0 current health, meaning some later sections may be empty if the game ends before the corresponding phases are completed.
+
+->pass
+  state:not started, normal, ok
+  Starfighter:
+    [0,S]->health:0/70, energy:70/70, Regen:1/3, Armour:1, Vision:13, Move:10, Move Cost:3, location:[A,1]
+      Projectile Pattern:Standard, Projectile Damage:70, Projectile Cost:5 (energy)
+      Power:Recall (50 energy): Teleport back to spawn.
+      score:0
+      1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20
+    A X  _  _  _  <  G  _  _  _  _  _  _  _  _  ?  ?  ?  ?  ?  ?
+    B _  _  _  _  _  _  _  _  _  _  _  _  _  ?  ?  ?  ?  ?  ?  ?
+    C _  _  _  _  _  _  _  _  _  _  _  _  ?  ?  ?  ?  ?  ?  ?  ?
+    D _  _  _  _  _  _  _  _  _  _  _  ?  ?  ?  ?  ?  ?  ?  ?  ?
+    E _  _  _  _  _  _  _  _  _  _  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?
+  The game is over. Better luck next time!
+
