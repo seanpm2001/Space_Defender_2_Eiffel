@@ -1,0 +1,8 @@
+--Test destroying enemy grunt and bullet via projectile (standard).
+play(5,10,2,2,2,2,2)
+toggle_debug_mode
+setup_next(5)
+move(A,1)
+fire
+fire
+fire

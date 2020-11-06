@@ -1,0 +1,15 @@
+--Test selecting different equipment.
+play(10,30,1,1,1,1,1)
+setup_select(2)
+setup_next(1)
+setup_select(2)
+setup_next(1)
+setup_select(3)
+setup_next(1)
+setup_select(2)
+setup_next(1)
+setup_back(4)
+setup_select(5)
+setup_next(4)
+setup_next(2)
+

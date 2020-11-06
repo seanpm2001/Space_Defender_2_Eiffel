@@ -1,0 +1,6 @@
+--Test selecting different weapon.
+play(10,30,1,1,1,1,1)
+setup_select(5)
+setup_select(3)
+setup_next(5)
+

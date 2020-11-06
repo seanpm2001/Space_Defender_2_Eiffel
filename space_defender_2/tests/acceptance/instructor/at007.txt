@@ -1,0 +1,10 @@
+--Test fire using default weapon (standard).
+play(5,10,1,1,1,1,1)
+toggle_debug_mode
+setup_next(5)
+fire
+fire
+fire
+fire
+fire
+

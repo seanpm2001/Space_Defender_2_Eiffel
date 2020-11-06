@@ -1,0 +1,11 @@
+--Test destroying enemy grunt (partially damage from standard projectile) and bullet via collision. Starfighter not destroyed.
+play(5,17,2,2,2,2,2)
+toggle_debug_mode
+setup_next(5)
+move(A,1)
+fire
+move(A,2)
+move(A,3)
+move(A,1)
+move(A,10)
+

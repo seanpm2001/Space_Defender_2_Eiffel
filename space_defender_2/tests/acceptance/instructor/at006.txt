@@ -1,0 +1,13 @@
+--Test regeneration with pass command.
+play(10,30,1,1,1,1,1)
+toggle_debug_mode
+setup_next(5)
+
+move(C,8)
+
+pass
+pass
+pass
+pass
+pass
+pass

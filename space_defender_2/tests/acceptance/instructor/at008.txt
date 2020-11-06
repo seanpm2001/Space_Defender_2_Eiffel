@@ -1,0 +1,8 @@
+--Test enemy grunt prempting their turn (which does not end).
+play(5,30,2,2,2,2,2)
+toggle_debug_mode
+setup_next(5)
+pass
+special
+pass
+
